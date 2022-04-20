@@ -1,0 +1,10 @@
+opencv-python-headless
+visdom
+dominate
+numpy
+scipy
+pillow
+unidecode
+requests
+tqdm
+dlib
