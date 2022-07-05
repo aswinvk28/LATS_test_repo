@@ -63,11 +63,11 @@ class BaseModel(torch.nn.Module):
         else:
             try:
                 if isinstance(network,nn.DataParallel):
-                    network.module.load_state_dict(torch.load(save_path))
+                    network.module.load_state_dict(torch.load(save_path, map_location=torch.device('cpu')))
                 else:
-                    network.load_state_dict(torch.load(save_path))
+                    network.load_state_dict(torch.load(save_path, map_location=torch.device('cpu')))
             except:
-                pretrained_dict = torch.load(save_path)
+                pretrained_dict = torch.load(save_path, map_location=torch.device('cpu'))
                 if isinstance(network,nn.DataParallel):
                     model_dict = network.module.state_dict()
                 else:

@@ -196,19 +196,19 @@ class LATS(BaseModel): #Lifetime Age Transformation Synthesis
             if self.valid.dim() > 1:
                 self.valid = self.valid.squeeze(0)
 
-            if isinstance(data['Paths'][0], tuple):
-                self.image_paths = [path[0] for path in data['Paths']]
-            else:
-                self.image_paths = data['Paths']
+            # if isinstance(data['Paths'][0], tuple):
+            #     self.image_paths = [path[0] for path in data['Paths']]
+            # else:
+            #     self.image_paths = data['Paths']
 
-            self.isEmpty = False if any(self.valid) else True
+            self.isEmpty = False if self.valid else True
             if not self.isEmpty:
                 available_idx = torch.arange(len(self.class_A))
                 select_idx = torch.masked_select(available_idx, self.valid).long()
                 inputs = torch.index_select(inputs, 0, select_idx)
 
                 self.class_A = torch.index_select(self.class_A, 0, select_idx)
-                self.image_paths = [val for i, val in enumerate(self.image_paths) if self.valid[i] == 1]
+                # self.image_paths = [val for i, val in enumerate(self.image_paths) if self.valid.item() == 1]
 
             self.reals = inputs
 
@@ -389,7 +389,7 @@ class LATS(BaseModel): #Lifetime Age Transformation Synthesis
         if self.isEmpty:
             return
 
-        self.numValid = self.valid.sum().item()
+        self.numValid = self.valid.item()
         sz = self.reals.size()
         self.fake_B = self.Tensor(self.numClasses, sz[0], sz[1], sz[2], sz[3])
         self.cyc_A = self.Tensor(self.numClasses, sz[0], sz[1], sz[2], sz[3])
@@ -450,14 +450,14 @@ class LATS(BaseModel): #Lifetime Age Transformation Synthesis
     def get_visuals(self):
         return_dicts = [OrderedDict() for i in range(self.numValid)]
 
-        real_A = util.tensor2im(self.reals.data)
-        fake_B_tex = util.tensor2im(self.fake_B.data)
+        real_A = torch.from_numpy(util.tensor2im(self.reals.data))
+        fake_B_tex = torch.from_numpy(util.tensor2im(self.fake_B.data))
 
         if self.debug_mode:
-            rec_A_tex = util.tensor2im(self.cyc_A.data[:,:,:,:,:])
+            rec_A_tex = torch.from_numpy(util.tensor2im(self.cyc_A.data[:,:,:,:,:]))
 
         if self.numValid == 1:
-            real_A = np.expand_dims(real_A, axis=0)
+            real_A = real_A.unsqueeze(0) # real_A = np.expand_dims(real_A, axis=0) real_A = real_A.unsqueeze(0)
 
         for i in range(self.numValid):
             # get the original image and the results for the current samples
